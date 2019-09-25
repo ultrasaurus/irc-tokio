@@ -1,7 +1,12 @@
-use tokio::net::TcpStream;
-use tokio::prelude::*;
 use std::env;
 use std::error::Error;
+
+use tokio::prelude::*;
+use tokio::{
+    codec::{Framed, LinesCodec},
+    net::TcpStream,
+};
+
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
@@ -11,13 +16,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let irc_pass = env::var("PASS")
         .expect("PASS environment var required. Perhaps you forgot to `source .env`"); 
 
-    // Connect to a peer
-    let mut stream = TcpStream::connect("127.0.0.1:1234").await?;
+    // Connect to the server
+    let addr = "127.0.0.1:1234";
+    let mut stream = TcpStream::connect(addr).await?;
+    let mut lines = Framed::new(stream, LinesCodec::new());
 
     // Write some data.
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
             pass=irc_pass, name=irc_user);
-    stream.write_all(connect_str.as_bytes()).await?;
+
+    lines
+        .send(connect_str)
+        .await?;
+
     // socat output from above code
     // > 2019/09/24 15:10:19.571671  length=123 from=0 to=122
     // PASS [redacted]\r
@@ -28,13 +39,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // < 2019/09/24 15:10:19.671806  length=82 from=0 to=81
     // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r
 
-    let mut response = String::new();
-    let mut reader = tokio::io::BufReader::new(stream);
-    reader.read_line(&mut response).await?;
+
+    // Read the first line from the `LineCodec` stream to get the username.
+    let response = match lines.next().await {
+        Some(Ok(line)) => line,
+        // We didn't get a line so we return early here.
+        _ => {
+            println!("Failed to get response from {}. Server disconnected.", addr);
+            return Ok(());
+        }
+    };
+
     println!("response: {}", response);
     // output
     // response: :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter
-
+    // response: :gitter!gitter@irc.gitter.im PRIVMSG gitter : Authentication failed. Get a valid token from https://irc.gitter.im
 
     // TODO
 
