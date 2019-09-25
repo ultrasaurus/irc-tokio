@@ -20,3 +20,11 @@ error[E0599]: no method named `read_line` found for type `tokio_net::tcp::stream
            `tokio_net::tcp::stream::TcpStream : tokio_io::io::async_buf_read_ext::AsyncBufReadExt`
 
 ```
+
+To fix, use `BufReader` which implements `AsyncBufReadExt`:
+```
+    let mut response = String::new();
+    let mut reader = tokio::io::BufReader::new(stream);
+    reader.read_line(&mut response).await?;
+    println!("response: {}", response);
+```
