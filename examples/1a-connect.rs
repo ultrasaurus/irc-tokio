@@ -27,8 +27,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // PASS [redacted]\r
     // NICK ultrasaurus_twitter\r
     // USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
+
+    // Next we want to read server response that looks like this:
     // < 2019/09/24 15:10:19.671806  length=82 from=0 to=81
     // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r
+
+    let mut response = String::new();
+    let mut reader = tokio::io::BufReader::new(stream);
+    reader.read_line(&mut response).await?;
+    println!("response: {}", response);
+    // output
+    // response: :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter
 
     Ok(())
 }
