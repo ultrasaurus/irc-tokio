@@ -28,9 +28,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // < 2019/09/24 15:10:19.671806  length=82 from=0 to=81
     // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r
 
-    let mut response = String::new();
-    let mut reader = tokio::io::BufReader::new(stream);
-    reader.read_line(&mut response).await?;
+    let read_len = irc_user.len() * 3 + "!@irc.gitter.im NICK :".len() + 2;
+    let mut response = String::with_capacity(read_len);
+    stream.read_exact(&mut response).await?;
     println!("response: {}", response);
     // output
     // response: :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter

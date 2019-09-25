@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 tokio = { git = "https://github.com/tokio-rs/tokio" }
+bytes = "0.4.12"
 
