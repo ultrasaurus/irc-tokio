@@ -1,12 +1,54 @@
+use std::borrow::Cow;
 use std::env;
 use std::error::Error;
 
 use tokio::prelude::*;
 use tokio::{
-    codec::{Framed, LinesCodec},
+    io::BufReader,
     net::TcpStream,
 };
 
+#[derive(Debug)]
+struct Session<'a> {
+    nick: &'a str,
+    stream: BufReader<&'a mut TcpStream>,
+}
+
+
+impl Session<'_> {
+  async fn connect<'a>(addr: &'a str, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+    let mut tcp_stream = TcpStream::connect(addr).await?;
+    let mut stream = BufReader::new(&mut tcp_stream);
+
+    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
+            pass=pass, name=nick);
+    stream.write_all(connect_str.as_bytes()).await?;
+
+    let mut response = String::new();
+    stream.read_line(&mut response).await?;
+    println!("response: {}", response);
+
+    Ok(Session {
+      nick,
+      stream,
+    })
+  }
+
+}
+
+/**
+ * error[E0515]: cannot return value referencing local variable `tcp_stream`
+  --> src/main.rs:31:5
+   |
+21 |       let mut stream = BufReader::new(&mut tcp_stream);
+   |                                       --------------- `tcp_stream` is borrowed here
+...
+31 | /     Ok(Session {
+32 | |       nick,
+33 | |       stream,
+34 | |     })
+   | |______^ returns a value referencing data owned by the current function
+ */
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
@@ -18,42 +60,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Connect to the server
     let addr = "127.0.0.1:1234";
-    let stream = TcpStream::connect(addr).await?;
-    let mut lines = Framed::new(stream, LinesCodec::new());
 
-    // Write some data.
-    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
-            pass=irc_pass, name=irc_user);
+    let irc = Session::connect(addr, &irc_user, &irc_pass).await?;
+    // let join_request = "JOIN #ultrasaurus";
+    // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
+    // response = irc.request(join_request, join_response).await;
+    // irc.message("PRIVMSG #ultrasaurus hi");
 
-    lines
-        .send(connect_str)
-        .await?;
-
-    // socat output from above code
-    // > 2019/09/24 15:10:19.571671  length=123 from=0 to=122
-    // PASS [redacted]\r
-    // NICK ultrasaurus_twitter\r
-    // USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
-
-    // Next we want to read server response that looks like this:
-    // < 2019/09/24 15:10:19.671806  length=82 from=0 to=81
-    // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r
-
-
-    // Read the first line from the `LineCodec` stream to get the server response.
-    let response = lines.next().await.unwrap();
-    if let Ok(line) = response {
-        println!("response: {:?}", line);
-    }
-    // example output 
-    // response: :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter
-    // response: :gitter!gitter@irc.gitter.im PRIVMSG gitter : Authentication failed. Get a valid token from https://irc.gitter.im
-
-
-    // TODO
-
-    // let join_str = format!("JOIN #irc-tokio\r\nPRIVMSG #irc-tokio :Hello from my first Rust IRC client!\r\n");
-    // stream.write_all(join_str.as_bytes()).await?;
+    // irc.message("PRIVMSG #ultrasaurus bye");
 
     Ok(())
 }
