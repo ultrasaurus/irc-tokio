@@ -11,19 +11,44 @@ use tokio::{
 #[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
-    stream: BufReader<&'a mut TcpStream>,
+    stream: &'a mut BufReader<&'a mut TcpStream>,
 }
 
 
 impl Session<'_> {
-  async fn connect<'a>(stream: BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+  async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
+        pass=pass, name=nick);
+    stream.write_all(connect_str.as_bytes()).await?;
     Ok(Session {
       nick,
       stream
     })
   }
 
-  
+  // // TODO: consider String vs &str parameter
+  // async fn read_line<'a>(mut self, response: &'a mut String) -> Result<(), Box<dyn Error>> {
+  //   // TODO: this prolly doesn't handle CLRF correctly
+  //   self.stream.read_line(response).await?;
+  //   Ok(())
+  // }
+
+  // async fn write_line(mut self, message: String) -> Result<(), Box<dyn Error>> {
+  //   self.stream.write_all(message.as_bytes()).await?;
+  //   Ok(())
+  // }
+
+  // async fn request<'a>(mut self, message: &'a str, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
+  //   let mut response = String::new();
+  //   self.write_line(message.to_string()).await?;
+  //   self.read_line(&mut response);
+  //   if response == expected_response.to_string() {
+  //     Ok(())
+  //   } else {
+  //     panic!("unexpected")      // not sure what's a good pattern for returning an error here
+  //   }
+  // }
+
 
 }
 
@@ -40,10 +65,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut raw_tcp = TcpStream::connect(addr).await?;
     let mut buffered_stream = BufReader::new(&mut raw_tcp); 
 
-    let irc = Session::connect(buffered_stream, &irc_user, &irc_pass).await?;
+    let irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
-    // response = irc.request(join_request, join_response).await;
+    // irc.request(join_request, join_response).await?;
     // irc.message("PRIVMSG #ultrasaurus hi");
 
     // irc.message("PRIVMSG #ultrasaurus bye");
