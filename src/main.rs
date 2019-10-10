@@ -42,10 +42,11 @@ impl Session<'_> {
   //   Ok(())
   // }
 
-  // async fn write_line(mut self, message: String) -> Result<(), Box<dyn Error>> {
-  //   self.stream.write_all(message.as_bytes()).await?;
-  //   Ok(())
-  // }
+  async fn message<'a>(mut self, message: &'a str) -> Result<(), Box<dyn Error>> {
+    // TODO: add CRLF if needed
+    self.stream.write_all(message.as_bytes()).await?;
+    Ok(())
+  }
 
   // async fn request<'a>(mut self, message: &'a str, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
   //   let mut response = String::new();
@@ -78,9 +79,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
     // irc.request(join_request, join_response).await?;
-    // irc.message("PRIVMSG #ultrasaurus hi");
 
-    // irc.message("PRIVMSG #ultrasaurus bye");
+// see error below.  I wouldn't normally put the await on line 85, but program
+// isn't done... 
+//     irc.message("PRIVMSG #ultrasaurus hi\r\n");
+//     irc.message("PRIVMSG #ultrasaurus bye\r\n").await?;
+// 78 |     let irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
+//    |         --- move occurs because `irc` has type `Session<'_>`, which does not implement the `Copy` trait
+// ...
+// 83 |     irc.message("PRIVMSG #ultrasaurus hi\r\n");
+//    |     --- value moved here
+// 84 | 
+// 85 |     irc.message("PRIVMSG #ultrasaurus bye\r\n").await?;
+//    |     ^^^ value used here after move
+
+
+// next step bot would wait to receive a message
+// or time interval
 
     Ok(())
 }
