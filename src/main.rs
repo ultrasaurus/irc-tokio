@@ -18,8 +18,17 @@ struct Session<'a> {
 impl Session<'_> {
   async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
-        pass=pass, name=nick);
+        name=nick, pass=pass);
     stream.write_all(connect_str.as_bytes()).await?;
+    
+    let mut response = String::new();
+    stream.read_line(&mut response).await?;
+    // PASS [redacted]\r
+    stream.read_line(&mut response).await?;
+    // NICK ultrasaurus_twitter\r
+    stream.read_line(&mut response).await?;
+    // USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
+
     Ok(Session {
       nick,
       stream
