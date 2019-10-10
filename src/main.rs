@@ -11,19 +11,19 @@ use tokio::{
 #[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
-    stream: TcpStream,
+    stream: BufReader<&'a mut TcpStream>,
 }
 
 
 impl Session<'_> {
-  async fn connect<'a>(addr: &'a str, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
-    let mut stream = TcpStream::connect(addr).await?;
-    let mut buffered_stream = BufReader::new(&mut stream); 
+  async fn connect<'a>(stream: BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     Ok(Session {
       nick,
       stream
     })
   }
+
+  
 
 }
 
@@ -37,8 +37,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Connect to the server
     let addr = "127.0.0.1:1234";
+    let mut raw_tcp = TcpStream::connect(addr).await?;
+    let mut buffered_stream = BufReader::new(&mut raw_tcp); 
 
-    let irc = Session::connect(addr, &irc_user, &irc_pass).await?;
+    let irc = Session::connect(buffered_stream, &irc_user, &irc_pass).await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
     // response = irc.request(join_request, join_response).await;
