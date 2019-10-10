@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::env;
 use std::error::Error;
 
@@ -8,47 +7,25 @@ use tokio::{
     net::TcpStream,
 };
 
+
 #[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
-    stream: BufReader<&'a mut TcpStream>,
+    stream: TcpStream,
 }
 
 
 impl Session<'_> {
   async fn connect<'a>(addr: &'a str, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
-    let mut tcp_stream = TcpStream::connect(addr).await?;
-    let mut stream = BufReader::new(&mut tcp_stream);
-
-    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
-            pass=pass, name=nick);
-    stream.write_all(connect_str.as_bytes()).await?;
-
-    let mut response = String::new();
-    stream.read_line(&mut response).await?;
-    println!("response: {}", response);
-
+    let mut stream = TcpStream::connect(addr).await?;
+    let mut buffered_stream = BufReader::new(&mut stream); 
     Ok(Session {
       nick,
-      stream,
+      stream
     })
   }
 
 }
-
-/**
- * error[E0515]: cannot return value referencing local variable `tcp_stream`
-  --> src/main.rs:31:5
-   |
-21 |       let mut stream = BufReader::new(&mut tcp_stream);
-   |                                       --------------- `tcp_stream` is borrowed here
-...
-31 | /     Ok(Session {
-32 | |       nick,
-33 | |       stream,
-34 | |     })
-   | |______^ returns a value referencing data owned by the current function
- */
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
