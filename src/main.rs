@@ -16,19 +16,28 @@ struct Session<'a> {
 
 
 impl Session<'_> {
+  async fn read_expect<'a>(mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
+    let mut response = String::new();
+    self.stream.read_line(&mut response).await?;
+    if response == expected_response.to_string() {
+      Ok(())
+    } else {
+      let error_str = format!("expected: {}, got: {}", expected_response, response);
+      panic!(error_str)      // not sure what's a good pattern for returning an error here
+    }
+  }
+
+  async fn wait_for_connect_confirmation<'a>(mut self) -> Result<(), Box<dyn Error>> {
+    self.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
+    // self.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
+    // self.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
+    Ok(())
+  }
   async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
         name=nick, pass=pass);
     stream.write_all(connect_str.as_bytes()).await?;
     
-    let mut response = String::new();
-    stream.read_line(&mut response).await?;
-    // PASS [redacted]\r
-    stream.read_line(&mut response).await?;
-    // NICK ultrasaurus_twitter\r
-    stream.read_line(&mut response).await?;
-    // USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
-
     Ok(Session {
       nick,
       stream
@@ -76,6 +85,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut buffered_stream = BufReader::new(&mut raw_tcp); 
 
     let irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
+    irc.wait_for_connect_confirmation().await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
     // irc.request(join_request, join_response).await?;
