@@ -27,14 +27,14 @@ impl Session<'_> {
     }
   }
 
-  async fn connect<'a>(stream: BufReader<TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+  async fn connect<'a>(mut stream: BufReader<TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
         name=nick, pass=pass);
+    stream.write_all(connect_str.as_bytes()).await?;
     let mut session = Session {
       nick,
       stream
     };
-    session.stream.write_all(connect_str.as_bytes()).await?;
     session.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
     session.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
     session.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
