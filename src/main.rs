@@ -27,21 +27,19 @@ impl Session<'_> {
     }
   }
 
-  async fn wait_for_connect_confirmation<'a>(&'a mut self) -> Result<(), Box<dyn Error>> {
-    self.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
-    self.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
-    self.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
-    Ok(())
-  }
   async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
         name=nick, pass=pass);
     stream.write_all(connect_str.as_bytes()).await?;
-    
-    Ok(Session {
+    let mut session = Session {
       nick,
       stream
-    })
+    };
+    session.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
+    session.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
+    session.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
+
+    Ok(session)
   }
 
   // // TODO: consider String vs &str parameter
@@ -85,7 +83,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut buffered_stream = BufReader::new(&mut raw_tcp); 
 
     let mut irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
-    irc.wait_for_connect_confirmation().await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
     // irc.request(join_request, join_response).await?;
