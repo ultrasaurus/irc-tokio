@@ -16,7 +16,7 @@ struct Session<'a> {
 
 
 impl Session<'_> {
-  async fn read_expect<'a>(mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
+  async fn read_expect<'a>(&'a mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
     let mut response = String::new();
     self.stream.read_line(&mut response).await?;
     if response == expected_response.to_string() {
@@ -27,10 +27,10 @@ impl Session<'_> {
     }
   }
 
-  async fn wait_for_connect_confirmation<'a>(mut self) -> Result<(), Box<dyn Error>> {
+  async fn wait_for_connect_confirmation<'a>(&'a mut self) -> Result<(), Box<dyn Error>> {
     self.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
-    // self.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
-    // self.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
+    self.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
+    self.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
     Ok(())
   }
   async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
@@ -84,7 +84,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut raw_tcp = TcpStream::connect(addr).await?;
     let mut buffered_stream = BufReader::new(&mut raw_tcp); 
 
-    let irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
+    let mut irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
     irc.wait_for_connect_confirmation().await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
