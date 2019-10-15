@@ -15,7 +15,7 @@ struct Session<'a> {
 }
 
 impl Session<'_> {
-  async fn read_expect<'a>(mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
+  async fn read_expect<'a>(&'a mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
     let mut response = String::new();
     self.stream.read_line(&mut response).await?;
     if response == expected_response.to_string() {
@@ -29,7 +29,7 @@ impl Session<'_> {
   async fn connect<'a>(addr: &'a str, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
     let stream = BufReader::new(tcp); 
-    let session = Session {
+    let mut session = Session {
       nick,
       stream
     };

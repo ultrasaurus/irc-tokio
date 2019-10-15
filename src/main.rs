@@ -11,7 +11,7 @@ use tokio::{
 #[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
-    stream: &'a mut BufReader<&'a mut TcpStream>,
+    stream: BufReader<TcpStream>,
 }
 
 
@@ -27,10 +27,9 @@ impl Session<'_> {
     }
   }
 
-  async fn connect<'a>(stream: &'a mut BufReader<&'a mut TcpStream>, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
-    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
-        name=nick, pass=pass);
-    stream.write_all(connect_str.as_bytes()).await?;
+  async fn connect<'a>(addr: &'a str, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+    let tcp = TcpStream::connect(addr).await?;
+    let stream = BufReader::new(tcp); 
     let mut session = Session {
       nick,
       stream
@@ -79,10 +78,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Connect to the server
     let addr = "127.0.0.1:1234";
-    let mut raw_tcp = TcpStream::connect(addr).await?;
-    let mut buffered_stream = BufReader::new(&mut raw_tcp); 
+    let irc = Session::connect(addr, &irc_user, &irc_pass).await?;
 
-    let mut irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
     // let join_request = "JOIN #ultrasaurus";
     // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
     // irc.request(join_request, join_response).await?;
