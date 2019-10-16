@@ -20,10 +20,13 @@ USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
 :irc.gitter.im 372 ultrasaurus_twitter :- Info at https://irc.gitter.im\r
 :irc.gitter.im 372 ultrasaurus_twitter :- Code at https://gitlab.com/gitlab-org/gitter/irc-bridge\r
 :irc.gitter.im 376 ultrasaurus_twitter :End of /MOTD command.\r
+
 > 2019/09/21 14:12:28.282415  length=19 from=123 to=141
 JOIN #ultrasaurus\r
+
 < 2019/09/21 14:12:30.821076  length=77 from=949 to=1025
 :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #tokio-rs/tokio\r
+
 < 2019/09/21 14:12:30.821933  length=438 from=1026 to=1463
 :irc.gitter.im 332 ultrasaurus_twitter #tokio-rs/tokio :\r
 :irc.gitter.im 353 ultrasaurus_twitter * #tokio-rs/tokio :LinuxMercedes zklapow baloo arcrose hnakamur rkusa bheesham markuskobler badboy tiziano88 Licenser jeromegn alex scrogson Hoverbear jxson piscisaureus kphelps porcow HelveticaScenario cmr 8573 typester tomgco reset mloc etehtsea pimeys debris astro gitter\r
