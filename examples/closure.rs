@@ -1,11 +1,9 @@
-
-
-type LineHandler = fn(line: &str) -> Option<&str>;
+// type LineHandler = fn(line: &str) -> Option<&str>;
 
 struct LineHandlerInfo<'a> {
   label: &'a str,
   match_literal: &'a str,
-  f: &'a LineHandler,
+  f: fn(&str) -> Option<&str>,
 }
 
 struct Game<'a> {
@@ -13,12 +11,8 @@ struct Game<'a> {
 }
 
 impl Game<'_> {
-  fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, mut f: LineHandler) {
-    let mut lh = LineHandlerInfo {
-      label,
-      match_literal,
-      f: &f,
-    };
+  fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, mut f: fn(&str) -> Option<&str>) {
+    let mut lh = LineHandlerInfo {label, match_literal, f};
     self.handlers.push(lh);
   }
 
