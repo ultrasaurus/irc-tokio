@@ -1,9 +1,9 @@
 struct Foo<'a> {
-  Bar: String
+  Bar: &'a str,
 }
 
-struct Baz <'a> {
-    Baz: Vec<Foo>
+struct Baz<'a> {
+    Baz: Vec<Foo<'a>>
 }
 
 fn main() {}
