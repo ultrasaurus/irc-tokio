@@ -1,30 +1,35 @@
 
 
-//type LineHandler = fn(line: &str) -> Option<&str>;
+type LineHandler = fn(line: &str) -> Option<&str>;
 
-
-#[derive(Debug)]
-struct Game<'a> {
-    handlers: Vec<LineHandlerInfo>,
+struct LineHandlerInfo<'a> {
+  label: &'a str,
+  match_literal: &'a str,
+  f: &'a LineHandler,
 }
 
-impl Game {
+struct Game<'a> {
+    handlers: Vec<LineHandlerInfo<'a>>,
+}
+
+impl Game<'_> {
   fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, mut f: LineHandler) {
     let mut lh = LineHandlerInfo {
       label,
       match_literal,
-      f,
+      f: &f,
     };
     self.handlers.push(lh);
   }
 
 }
 
-main() {
+fn main() {
   let mut g = Game {
     handlers: Vec::new()
-  }
+  };
   g.match_str("echo hello", "hello", |s| {
-    println("{}", s);
-  })
+    println!("{}", s);
+    None
+  });
 }
