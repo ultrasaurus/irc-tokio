@@ -36,6 +36,10 @@ impl Session<'_> {
 
     Ok(())
   }
+
+  fn match_str<'a>(&'a mut self, label: &'a str, response: &'a str, f: fn() -> ()) {
+
+  }
 }
 
 
@@ -51,12 +55,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
-    // let join_response = format!("{name}@irc.gitter.im JOIN #tokio-rs/tokio\r\n", 
-    //     name=irc_user);
+    let join_response = format!("{name}@irc.gitter.im JOIN #tokio-rs/tokio\r\n", 
+        name=irc_user);
 
-    // irc.match_str("Joining #ultrasaurus", join_response, {
-    //   // do something
-    // });
+    irc.match_str("Joining #ultrasaurus", &join_response, || {
+      println!("joined #ultrasaurus");
+      // do something
+    });
 
 
     // irc.match_str("Joining ultrasaurus", join_response, ultra_handler);
