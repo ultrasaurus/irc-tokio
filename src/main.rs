@@ -7,21 +7,19 @@ use tokio::{
     net::TcpStream,
 };
 
-#[derive(Clone)]
 struct LineHandlerInfo<'a> {
   label: &'a str,
   match_literal: &'a str,
   f: LineHandler,
 }
 
-#[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
     stream: BufReader<TcpStream>,
-    handlers: Vec<LineHandlerInfo>,
+    handlers: Vec<LineHandlerInfo<'a>>,
 }
 
-type LineHandler = fn<'a>(line: &'a str) -> Option<&'a str>;
+type LineHandler = fn(line: &str) -> Option<&str>;
 
 impl Session<'_> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
@@ -48,13 +46,12 @@ impl Session<'_> {
     Ok(())
   }
 
-  fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, mut f: LineHandler) {
-    let mut lh = LineHandlerInfo {
+  fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, f: LineHandler) {
+    self.handlers.push(LineHandlerInfo {
       label,
       match_literal,
       f,
-    };
-    self.handlers.push(lh)
+    })
   }
 }
 
