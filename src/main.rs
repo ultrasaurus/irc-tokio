@@ -13,6 +13,8 @@ struct Session<'a> {
     stream: BufReader<TcpStream>,
 }
 
+type LineHandler = fn(line: &str) -> Option<&str>;
+
 impl Session<'_> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
@@ -37,7 +39,7 @@ impl Session<'_> {
     Ok(())
   }
 
-  fn match_str<'a>(&'a mut self, label: &'a str, response: &'a str, f: fn() -> ()) {
+  fn match_str<'a>(&'a mut self, label: &'a str, response: &'a str, f: LineHandler) {
 
   }
 }
@@ -58,9 +60,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let join_response = format!("{name}@irc.gitter.im JOIN #tokio-rs/tokio\r\n", 
         name=irc_user);
 
-    irc.match_str("Joining #ultrasaurus", &join_response, || {
-      println!("joined #ultrasaurus");
+    irc.match_str("Joining #ultrasaurus", &join_response, |line| {
+      println!("joined #ultrasaurus: {}", line);
       // do something
+      None
     });
 
 
