@@ -7,13 +7,11 @@ use tokio::{
     net::TcpStream,
 };
 
-
 #[derive(Debug)]
 struct Session<'a> {
     nick: &'a str,
     stream: BufReader<TcpStream>,
 }
-
 
 impl Session<'_> {
   async fn read_expect<'a>(&'a mut self, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
@@ -34,37 +32,17 @@ impl Session<'_> {
       nick,
       stream
     };
+    
+    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
+        pass=pass, name=nick);
+    session.stream.write_all(connect_str.as_bytes()).await?;
+
     session.read_expect(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r\n").await?;
     session.read_expect(":irc.gitter.im 001 ultrasaurus_twitter Gitter :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im\r\n").await?;
     session.read_expect(":irc.gitter.im 002 ultrasaurus_twitter Version: 1.4.0\r\n").await?;
 
     Ok(session)
   }
-
-  // // TODO: consider String vs &str parameter
-  // async fn read_line<'a>(mut self, response: &'a mut String) -> Result<(), Box<dyn Error>> {
-  //   // TODO: this prolly doesn't handle CLRF correctly
-  //   self.stream.read_line(response).await?;
-  //   Ok(())
-  // }
-
-  async fn message<'a>(mut self, message: &'a str) -> Result<(), Box<dyn Error>> {
-    // TODO: add CRLF if needed
-    self.stream.write_all(message.as_bytes()).await?;
-    Ok(())
-  }
-
-  // async fn request<'a>(mut self, message: &'a str, expected_response: &'a str) -> Result<(), Box<dyn Error>> {
-  //   let mut response = String::new();
-  //   self.write_line(message.to_string()).await?;
-  //   self.read_line(&mut response);
-  //   if response == expected_response.to_string() {
-  //     Ok(())
-  //   } else {
-  //     panic!("unexpected")      // not sure what's a good pattern for returning an error here
-  //   }
-  // }
-
 
 }
 
@@ -80,26 +58,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let irc = Session::connect(addr, &irc_user, &irc_pass).await?;
 
-    // let join_request = "JOIN #ultrasaurus";
-    // let join_response = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #ultrasaurus";
-    // irc.request(join_request, join_response).await?;
-
-// see error below.  I wouldn't normally put the await on line 85, but program
-// isn't done... 
-//     irc.message("PRIVMSG #ultrasaurus hi\r\n");
-//     irc.message("PRIVMSG #ultrasaurus bye\r\n").await?;
-// 78 |     let irc = Session::connect(&mut buffered_stream, &irc_user, &irc_pass).await?;
-//    |         --- move occurs because `irc` has type `Session<'_>`, which does not implement the `Copy` trait
-// ...
-// 83 |     irc.message("PRIVMSG #ultrasaurus hi\r\n");
-//    |     --- value moved here
-// 84 | 
-// 85 |     irc.message("PRIVMSG #ultrasaurus bye\r\n").await?;
-//    |     ^^^ value used here after move
-
-
-// next step bot would wait to receive a message
-// or time interval
 
     Ok(())
 }
