@@ -6,8 +6,8 @@ struct Game<'a> {
     handlers: Vec<LineHandlerInfo<'a>>,
 }
 
-impl Game<'_> {
-  fn match_str<'a>(&'a mut self, label: &'a str) {
+impl<'b> Game<'b> {
+  fn match_str(mut self, label: &'b str) {
     let mut lh = LineHandlerInfo {label};
     self.handlers.push(lh);
   }
