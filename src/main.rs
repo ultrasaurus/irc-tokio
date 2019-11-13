@@ -21,7 +21,7 @@ struct Session<'a> {
 
 type LineHandler = fn(line: &str) -> Option<&str>;
 
-impl Session<'_> {
+impl<'imp> Session<'imp> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
     let stream = BufReader::new(tcp); 
@@ -46,7 +46,7 @@ impl Session<'_> {
     Ok(())
   }
 
-  fn match_str<'a>(&'a mut self, label: &'a str, match_literal: &'a str, f: LineHandler) {
+  fn match_str(&mut self, label: &'imp str, match_literal: &'imp str, f: LineHandler) {
     self.handlers.push(LineHandlerInfo {
       label,
       match_literal,
