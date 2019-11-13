@@ -23,6 +23,7 @@ impl Session<'_> {
     })
   }
 
+  // TODO: return Session to allow chaining
   async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
         pass=pass, name=self.nick);
@@ -36,6 +37,11 @@ impl Session<'_> {
 
     Ok(())
   }
+  
+  async fn command<'a>(&'a mut self, cmd_str: &'a str) -> Result<(), std::io::Error> {
+    self.stream.write_all(cmd_str.as_bytes()).await
+  }
+
 }
 
 
@@ -51,12 +57,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
-    // let join_response = format!("{name}@irc.gitter.im JOIN #tokio-rs/tokio\r\n", 
-    //     name=irc_user);
+    let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio\r\n", 
+        name=irc_user);
 
-    // irc.match_str("Joining #ultrasaurus", join_response, {
-    //   // do something
-    // });
+    //irc.match_str("Joining #ultrasaurus", join_response, {
+      // do something
+    //});
 
 
     // irc.match_str("Joining ultrasaurus", join_response, ultra_handler);
@@ -67,11 +73,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // irc.event_disconnect("when disconnected", reconnect);
     // irc.init("/join #ultrasaurus");
     irc.connect(&irc_pass).await?;    // read loop
-    // irc.command("/join #ultrasaurus");
+    irc.command("/join #irc-tokio");
  
     //tokio::run(whatever);
-
-
 
     Ok(())
 }
