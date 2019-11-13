@@ -7,19 +7,26 @@ use tokio::{
     net::TcpStream,
 };
 
-#[derive(Debug)]
+struct Rule<'r> {
+  label_str: &'r str,
+  match_str: &'r str,
+  handler: &'r dyn Fn() -> (),
+}
+
 struct Session<'a> {
     nick: &'a str,
     stream: BufReader<TcpStream>,
+    rules: Vec<Rule<'a>>,
 }
 
-impl Session<'_> {
+impl<'s> Session<'s> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
     let stream = BufReader::new(tcp); 
     Ok(Session {
       nick,
-      stream
+      stream,
+      rules: vec![],
     })
   }
 
@@ -43,9 +50,15 @@ impl Session<'_> {
   }
 
 
-  async fn match_str<'a, F>(&'a mut self, label_str: &'a str, match_str: &'a str, f: F) -> Result<(), std::io::Error> 
+  async fn match_str<F: 's>(&mut self, label_str: &'s str, match_str: &'s str, f: F) -> Result<(), std::io::Error> 
     where F: Fn() -> ()
   {
+    self.rules.push(Rule {
+      label_str,
+      match_str,
+      handler: &f
+    });
+
     Ok(())
   }
 
