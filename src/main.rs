@@ -46,6 +46,10 @@ impl<'imp> Session<'imp> {
     Ok(())
   }
 
+  async fn command<'a>(&'a mut self, cmd_str: &'a str) -> Result<(), std::io::Error> {
+    self.stream.write_all(cmd_str.as_bytes()).await
+  }
+
   // TODO: why not &'imp mut self ???
   fn match_str(&mut self, label: &'imp str, match_literal: &'imp str, f: LineHandler) {
     self.handlers.push(LineHandlerInfo {
@@ -69,7 +73,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
-    let join_response = format!("{name}@irc.gitter.im JOIN #tokio-rs/tokio\r\n", 
+    let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio\r\n", 
         name=irc_user);
 
     irc.match_str("Joining #ultrasaurus", &join_response, |line| {
@@ -87,7 +91,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // irc.event_disconnect("when disconnected", reconnect);
     // irc.init("/join #ultrasaurus");
     irc.connect(&irc_pass).await?;    // read loop
-    // irc.command("/join #ultrasaurus");
+    irc.command("/join #ultrasaurus");
  
     //tokio::run(whatever);
 
