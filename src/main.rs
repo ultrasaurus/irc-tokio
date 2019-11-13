@@ -59,11 +59,21 @@ impl<'imp> Session<'imp> {
     loop {
       self.stream.read_line(&mut response).await?;
       println!("{} {}", count, response);
+      for info in &self.handlers {
+        println!("match_literal: {}", info.match_literal);
+        if info.match_literal == response {
+          println!("match!!!!!!!!!!");
+
+          (info.f)(&response);
+        }
+      }
       response = String::new();
       count += 1;
-    }
+      if count > 18 {break};
+    };
+    Ok(())
   }
-
+  
 }
 
 
@@ -79,6 +89,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
+    //let new_name = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im"
     let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio/community\r\n", 
         name=irc_user);
 
