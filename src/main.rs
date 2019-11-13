@@ -37,12 +37,6 @@ impl<'imp> Session<'imp> {
         pass=pass, name=self.nick);
     self.stream.write_all(connect_str.as_bytes()).await?; 
     
-    let mut response = String::new();
-    loop {
-      self.stream.read_line(&mut response).await?;
-      println!("{}", response);
-    }
-
     Ok(())
   }
 
@@ -58,6 +52,18 @@ impl<'imp> Session<'imp> {
       f,
     })
   }
+
+  async fn handle_lines(&mut self) -> Result<(), std::io::Error> {
+    let mut response = String::new();
+    let mut count = 0;
+    loop {
+      self.stream.read_line(&mut response).await?;
+      println!("{} {}", count, response);
+      response = String::new();
+      count += 1;
+    }
+  }
+
 }
 
 
@@ -73,11 +79,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
-    let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio\r\n", 
+    let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio/community\r\n", 
         name=irc_user);
 
     irc.match_str("Joining #ultrasaurus", &join_response, |line| {
-      println!("joined #ultrasaurus: {}", line);
+      println!("************** joined #ultrasaurus: {}", line);
       // do something
       None
     });
@@ -91,9 +97,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // irc.event_disconnect("when disconnected", reconnect);
     // irc.init("/join #ultrasaurus");
     irc.connect(&irc_pass).await?;    // read loop
-    irc.command("/join #ultrasaurus");
- 
-    //tokio::run(whatever);
+    println!("                                               -----------------------------");
+    irc.command("JOIN #irc-tokio/community\r\n").await?;
+    irc.handle_lines().await?;
 
 
 
