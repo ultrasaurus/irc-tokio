@@ -42,6 +42,13 @@ impl Session<'_> {
     self.stream.write_all(cmd_str.as_bytes()).await
   }
 
+
+  async fn match_str<'a, F>(&'a mut self, label_str: &'a str, match_str: &'a str, f: F) -> Result<(), std::io::Error> 
+    where F: Fn() -> ()
+  {
+    Ok(())
+  }
+
 }
 
 
@@ -60,9 +67,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio\r\n", 
         name=irc_user);
 
-    //irc.match_str("Joining #ultrasaurus", join_response, {
-      // do something
-    //});
+    irc.match_str("Joining #ultrasaurus", &join_response, || {
+      println!("Joined ultrasaurus -- bot can do something now!!!")
+    });
 
 
     // irc.match_str("Joining ultrasaurus", join_response, ultra_handler);
@@ -73,7 +80,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // irc.event_disconnect("when disconnected", reconnect);
     // irc.init("/join #ultrasaurus");
     irc.connect(&irc_pass).await?;    // read loop
-    irc.command("/join #irc-tokio");
+    irc.command("/join #irc-tokio").await?;
  
     //tokio::run(whatever);
 
