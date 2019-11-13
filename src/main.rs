@@ -46,6 +46,7 @@ impl<'imp> Session<'imp> {
     Ok(())
   }
 
+  // TODO: why not &'imp mut self ???
   fn match_str(&mut self, label: &'imp str, match_literal: &'imp str, f: LineHandler) {
     self.handlers.push(LineHandlerInfo {
       label,
