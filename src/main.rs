@@ -9,8 +9,7 @@ use tokio::{
 
 struct LineHandlerInfo<'a> {
   label: &'a str,
-  match_literal: &'a str,
-  f: LineHandler,
+  f: LineHandler<'a>,
 }
 
 // 1. prefix (OPTIONAL)
@@ -24,7 +23,7 @@ struct Message<'a> {
 }
 
 impl Message<'_> {
-  fn fromString<'m>(line: &'m str) -> Result<Message<'m>, Box<dyn Error>> {  
+  fn fromString<'m>(line: &'m str) -> Result<Message<'m>, std::io::Error> {  
     let mut parts = line.split(' ');
     let prefix = if line.get(0..1).unwrap() == ":" {
       parts.next()
@@ -46,7 +45,7 @@ struct Session<'a> {
     handlers: Vec<LineHandlerInfo<'a>>,
 }
 
-type LineHandler = fn(line: &str) -> Option<&str>;
+type LineHandler<'a> = fn(line: &'a Message) -> Option<&'a str>;
 
 impl<'imp> Session<'imp> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
@@ -72,29 +71,26 @@ impl<'imp> Session<'imp> {
   }
 
   // TODO: why not &'imp mut self ???
-  fn match_str(&mut self, label: &'imp str, match_literal: &'imp str, f: LineHandler) {
+  fn register_handler(&mut self, label: &'imp str, f: LineHandler<'imp>) {
     self.handlers.push(LineHandlerInfo {
       label,
-      match_literal,
       f,
     })
   }
 
   async fn handle_lines(&mut self) -> Result<(), std::io::Error> {
-    let mut response = String::new();
     let mut count = 0;
     loop {
+      let mut response = String::new();
       self.stream.read_line(&mut response).await?;
       println!("{} {}", count, response);
-      for info in &self.handlers {
-        println!("match_literal: {}", info.match_literal);
-        if info.match_literal == response {
-          println!("match!!!!!!!!!!");
-
-          (info.f)(&response);
-        }
+      {
+        let message = Message::fromString(&response)?;
+        for info in &self.handlers {
+            println!("about to call: {}", info.label);
+            (info.f)(&message);
+        }  
       }
-      response = String::new();
       count += 1;
       if count > 18 {break};
     };
@@ -116,15 +112,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let mut irc = Session::new(addr, &irc_user).await?;
 
-    //let new_name = ":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im"
-    let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio/community\r\n", 
-        name=irc_user);
+    // let join_response = format!("{name}@irc.gitter.im JOIN #irc-tokio/community\r\n", 
+    //     name=irc_user);
+// :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #irc-tokio/community\r
 
-    irc.match_str("Joining #ultrasaurus", &join_response, |line| {
-      println!("************** joined #ultrasaurus: {}", line);
-      // do something
+    irc.register_handler("#irc-tokio/community JOIN response", |message: &Message| {
+      println!("handler");
+      if message.command == "JOIN" {
+        println!("************** joined #ultrasaurus: {:?} {} {:?}", message.prefix, message.command, message.params);
+      } 
       None
     });
+
+    // irc.match_str("Joining #ultrasaurus", &join_response, |line| {
+    //   println!("************** joined #ultrasaurus: {}", line);
+    //   // do something
+    //   None
+    // });
 
 
     // irc.match_str("Joining ultrasaurus", join_response, ultra_handler);
