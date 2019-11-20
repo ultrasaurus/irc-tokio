@@ -23,7 +23,7 @@ struct Message<'a> {
 }
 
 impl Message<'_> {
-  fn fromString<'m>(line: &'m str) -> Result<Message<'m>, std::io::Error> {  
+  fn from_string<'m>(line: &'m str) -> Result<Message<'m>, std::io::Error> {
     let mut parts = line.split(' ');
     let prefix = if line.get(0..1).unwrap() == ":" {
       parts.next()
@@ -85,7 +85,7 @@ impl<'imp> Session<'imp> {
       self.stream.read_line(&mut response).await?;
       println!("{} {}", count, response);
       {
-        let message = Message::fromString(&response)?;
+        let message = Message::from_string(&response)?;
         for info in &self.handlers {
             println!("about to call: {}", info.label);
             (info.f)(&message);
