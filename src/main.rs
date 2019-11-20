@@ -9,7 +9,7 @@ use tokio::{
 
 struct LineHandlerInfo<'a> {
   label: &'a str,
-  f: LineHandler<'a>,
+  f: LineHandler,
 }
 
 // 1. prefix (OPTIONAL)
@@ -45,7 +45,7 @@ struct Session<'a> {
     handlers: Vec<LineHandlerInfo<'a>>,
 }
 
-type LineHandler<'a> = fn(line: &'a Message) -> Option<&'a str>;
+type LineHandler = fn(line: &Message) -> ();
 
 impl<'imp> Session<'imp> {
   async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
@@ -71,7 +71,7 @@ impl<'imp> Session<'imp> {
   }
 
   // TODO: why not &'imp mut self ???
-  fn register_handler(&mut self, label: &'imp str, f: LineHandler<'imp>) {
+  fn register_handler(&mut self, label: &'imp str, f: LineHandler) {
     self.handlers.push(LineHandlerInfo {
       label,
       f,
@@ -121,7 +121,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
       if message.command == "JOIN" {
         println!("************** joined #ultrasaurus: {:?} {} {:?}", message.prefix, message.command, message.params);
       } 
-      None
+      ()
     });
 
     // irc.match_str("Joining #ultrasaurus", &join_response, |line| {
