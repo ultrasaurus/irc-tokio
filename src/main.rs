@@ -13,6 +13,33 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
+// 1. prefix (OPTIONAL)
+// 2. command
+// 3. command parameters (maximum of fifteen (15)).  The prefix, command, and all 
+
+struct Message<'a> {
+  prefix: Option<&'a str>, 
+  command: &'a str,
+  params: Vec<&'a str>,
+}
+
+impl Message<'_> {
+  fn fromString<'m>(line: &'m str) -> Result<Message<'m>, Box<dyn Error>> {  
+    let mut parts = line.split(' ');
+    let prefix = if line.get(0..1).unwrap() == ":" {
+      parts.next()
+    } else {
+      None
+    };
+    
+    Ok(Message {
+      prefix,
+      command: parts.next().unwrap(),
+      params: parts.collect(),
+    })
+  }
+}
+
 struct Session<'a> {
     nick: &'a str,
     stream: BufReader<TcpStream>,
