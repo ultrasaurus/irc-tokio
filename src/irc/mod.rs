@@ -7,7 +7,7 @@ use tokio::{
 };
 
 pub mod message;
-pub use self::message::Message; // Re-export `greetings::hello` to phrases
+pub use self::message::Message; // Re-export `Message` as part of irc module
 
 struct LineHandlerInfo<'a> {
   label: &'a str,

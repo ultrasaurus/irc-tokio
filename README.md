@@ -1,10 +1,8 @@
 # Making an IRC bot in Rust
 
-Initial learning sequence
-1. see if we can connect to server with just write_all, 
-   maybe initial hard-coded reading of server response
-2. [split](https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html#method.split) - zero cost split, must be on same task (takes stream reference), assuming read/write operations share state so this is likely to be optimal
-3. probably write [Framed codec](https://docs.rs/tokio/0.2.0-alpha.5/tokio/codec/struct.Framed.html), though maybe [Lines codec](https://docs.rs/tokio/0.2.0-alpha.5/tokio/codec/struct.LinesCodec.html) can work or should be made to work
+Work-in-progress
+- step 1 is mostly complete in main.rs (though might not create module in tutorial)
+- examples includes some ideas for possible mini-steps to get to step 1
 
 Steps of the tutorial
   1. establish connection/login handshake (pass, user, etc)
@@ -15,14 +13,9 @@ Steps of the tutorial
   4. Bot responds to a question
   5. no channel activity for certain amount of time, say "is anyone here?"
 
-Open questions
-- [ ] what is the simplest way to read from the socket (that we can refactor/modify later)?  (e.g. write_all works in example 1a, what about read?)
-
-
 Thinking about best timing to fold into the tutorial
 - [ ] error handling
 - [ ] testing
-
 
 
 ## 1a: Connect to gitter via IRC
@@ -50,4 +43,11 @@ USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
 ```
 
 
+## Notes from initial brainstorm
 
+potential learning sequence...
+
+1. connect to server with just write_all,
+   maybe initial hard-coded reading of server response
+2. [split](https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html#method.split) - zero cost split, must be on same task (takes stream reference), assuming read/write operations share state so this is likely to be optimal
+3. probably write [Framed codec](https://docs.rs/tokio/0.2.0-alpha.5/tokio/codec/struct.Framed.html), though maybe [Lines codec](https://docs.rs/tokio/0.2.0-alpha.5/tokio/codec/struct.LinesCodec.html) can work or should be made to work

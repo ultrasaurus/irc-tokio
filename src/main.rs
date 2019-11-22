@@ -1,9 +1,7 @@
 use std::env;
 use std::error::Error;
 
-
 mod irc;
-
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
@@ -26,17 +24,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
       ()
     });
 
-    // irc.match_fn("When pinged", "fn", ping_handler);
-    // irc.match_regex("when asked for help", "/^@irc_user: help/", help_handler);
+    // TODO: handle ping (maybe inside Session impl)
 
-    // irc.event_disconnect("when disconnected", reconnect);
-    // irc.init("/join #ultrasaurus");
     irc.connect(&irc_pass).await?;    // read loop
-    println!("                                               -----------------------------");
     irc.command("JOIN #irc-tokio/community\r\n").await?;
     irc.handle_lines().await?;
-
-
-
     Ok(())
 }
