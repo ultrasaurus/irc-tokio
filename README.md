@@ -30,7 +30,15 @@ socat -v tcp4-listen:1234,reuseaddr,fork ssl:irc.gitter.im:6667,verify=0
 
 4. in another terminal window, in local repo directory
 
-```cargo run --example 1a-connect```
+```cargo run```
+
+sample expected output (just for showing progress for now)
+```
+**** joined #ultrasaurus!
+ Some(":ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im")
+ JOIN
+ ["#irc-tokio/community\r\n"]
+```
 
 socat output:
 ```
@@ -40,6 +48,7 @@ NICK ultrasaurus_twitter\r
 USER ultrasaurus_twitter 0 * ultrasaurus_twitter\r
 < 2019/09/21 17:07:51.476298  length=82 from=0 to=81
 :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter\r
+...
 ```
 
 

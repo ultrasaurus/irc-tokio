@@ -59,11 +59,9 @@ impl<'imp> Session<'imp> {
     loop {
       let mut response = String::new();
       self.stream.read_line(&mut response).await?;
-      println!("{} {}", count, response);
       {
         let message = Message::from_string(&response)?;
         for info in &self.handlers {
-            println!("about to call: {}", info.label);
             (info.f)(&message);
         }
       }

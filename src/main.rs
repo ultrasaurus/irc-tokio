@@ -17,9 +17,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #irc-tokio/community\r
     irc.register_handler("#irc-tokio/community JOIN response", |message| {
-      println!("handler");
       if message.command == "JOIN" {
-        println!("************** joined #ultrasaurus: {:?} {} {:?}", message.prefix, message.command, message.params);
+        println!("**** joined #ultrasaurus!\n {:?}\n {}\n {:?}\n", message.prefix, message.command, message.params);
       }
       ()
     });
