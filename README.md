@@ -20,6 +20,8 @@ Thinking about best timing to fold into the tutorial
 
 ## 1a: Connect to gitter via IRC
 
+[![Join the chat at https://gitter.im/irc-tokio/community](https://badges.gitter.im/irc-tokio/community.svg)](https://gitter.im/irc-tokio/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 1. join gitter
 2. get IRC password from: https://irc.gitter.im/
 3. on the command-line
