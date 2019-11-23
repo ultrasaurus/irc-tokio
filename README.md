@@ -1,6 +1,15 @@
 # Making an IRC bot in Rust
 
 Work-in-progress
+
+* Please put general feedback in the [tokio/doc-push issue](https://github.com/tokio-rs/doc-push/issues/98)
+* Pull requests welcome! specifically...
+  * refactors or additions to `main.rs` (which is where we are working on something "directional" like what we might have after completing
+  the tutorial and then maybe doing some more work)
+  * examples has ideas for steps in the tutorial (small bits of working code that could build toward the full IRC bot)
+  * ASK.md - these are questions or errors that would benefit from answering in
+  docs or somewhere.  Add questions or answers or both!
+
 - step 1 is mostly complete in main.rs (though might not create module in tutorial)
 - examples includes some ideas for possible mini-steps to get to step 1
 
