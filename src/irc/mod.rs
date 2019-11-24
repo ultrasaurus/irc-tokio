@@ -54,13 +54,14 @@ impl<'imp> Session<'imp> {
     })
   }
 
-  pub async fn handle_lines(&mut self) -> Result<(), std::io::Error> {
+  pub async fn handle_lines(&mut self) -> Result<(), Box<dyn std::error::Error>> {
     let mut count = 0;
     loop {
       let mut response = String::new();
       self.stream.read_line(&mut response).await?;
       {
-        let message = Message::from_string(&response)?;
+        let message = Message::from_string(&response)
+            .ok_or("Could not parse message")?;
         for info in &self.handlers {
             (info.f)(&message);
         }
