@@ -14,17 +14,20 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
-pub struct Session<'a> {
+pub struct Session<'a, T = TcpStream> {
+    tcp: T,
     nick: &'a str,
     stream: BufReader<TcpStream>,
     handlers: Vec<LineHandlerInfo<'a>>,
 }
 
+// Session::connect(...)
+
 type LineHandler = fn(line: &Message) -> ();
 
-impl<'imp> Session<'imp, T: AsyncRead + AsyncWrite> {
-  pub async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
-    let tcp = TcpStream::connect(addr).await?;
+impl<'imp, T: AsyncRead + AsyncWrite> Session<'imp, T> {
+  pub async fn new<'a>(tcp: T, addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
+    //let tcp = TcpStream::connect(addr).await?;
     let stream = BufReader::new(tcp);
     Ok(Session {
       nick,
@@ -32,7 +35,9 @@ impl<'imp> Session<'imp, T: AsyncRead + AsyncWrite> {
       handlers: Vec::new(),
     })
   }
+}
 
+impl<'imp> Session<'imp, TcpStream> {
   pub async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
     let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
         pass=pass, name=self.nick);

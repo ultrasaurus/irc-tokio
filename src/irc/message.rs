@@ -30,9 +30,17 @@ impl<'m> Message<'m> {
 }
 
 #[test]
-fn can_create_message() {
+fn can_create_message_with_prefix() {
     let m = Message::from_string(":me!me@irc.gitter.im JOIN #mychannel").unwrap();
     assert_eq!(m.prefix, Some(":me!me@irc.gitter.im"));
     assert_eq!(m.command, "JOIN");
     assert_eq!(m.params[0], "#mychannel");
 }
+
+fn can_create_message_with_prefix() {
+  let m = Message::from_string(":me!me@irc.gitter.im JOIN #mychannel").unwrap();
+  assert_eq!(m.prefix, Some(":me!me@irc.gitter.im"));
+  assert_eq!(m.command, "JOIN");
+  assert_eq!(m.params[0], "#mychannel");
+}
+
