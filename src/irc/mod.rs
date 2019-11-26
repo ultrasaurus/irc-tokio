@@ -22,7 +22,7 @@ pub struct Session<'a> {
 
 type LineHandler = fn(line: &Message) -> ();
 
-impl<'imp> Session<'imp> {
+impl<'imp> Session<'imp, T: AsyncRead + AsyncWrite> {
   pub async fn new<'a>(addr: &'a str, nick: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
     let stream = BufReader::new(tcp);
