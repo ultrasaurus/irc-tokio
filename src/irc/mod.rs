@@ -99,13 +99,13 @@ impl<'imp> Session<'imp> {
 
 }
 
-#[test]
-fn can_create_protocol() {
+#[tokio::test]
+async fn can_create_protocol() {
   use tokio::io::{AsyncReadExt, AsyncWriteExt};
   use tokio_test::io::Builder;
 
-  let mock_connection = Builder::new().write("PASS secret\r\nNICK maria\r\nUSER maria 0 * maria\r\n")
-                        .read(":maria!maria@irc.gitter.im NICK :maria\r\n");
+  let mock_connection = Builder::new().write(b"PASS secret\r\nNICK maria\r\nUSER maria 0 * maria\r\n")
+                        .read(b":maria!maria@irc.gitter.im NICK :maria\r\n");
 
   let irc = Protocol::new(mock_connection, "maria");
   irc.connect("secret").await.expect("irc.connect");
