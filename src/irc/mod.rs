@@ -14,6 +14,31 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
+// pub struct Protocol<'a, Connection = TcpStream> {
+//   tcp: Connection,
+//   nick: &'a str,
+//   stream: BufReader<TcpStream>,
+//   handlers: Vec<LineHandlerInfo<'a>>,
+// }
+
+// // T - tcp, tcp/tls, or test fake
+// impl<'imp, Connection: AsyncRead + AsyncWrite> Protocol<'imp, Connection> {
+//     pub async fn new<'a>(tcp: Connection, nick: &'a str) -> Protocol<'a, Connection> {
+//       Ok(Session {
+//         nick,
+//         BufReader::new(tcp),
+//         handlers: Vec::new(),
+//       })
+// }
+
+// tokio::test::io::Mock
+// tokio::fs::File
+// tokio::io::{BufReader, BufWriter}
+
+
+
+
+
 pub struct Session<'a> {
     nick: &'a str,
     stream: BufReader<TcpStream>,
@@ -74,3 +99,16 @@ impl<'imp> Session<'imp> {
 
 }
 
+#[test]
+fn can_create_protocol() {
+  use tokio::io::{AsyncReadExt, AsyncWriteExt};
+  use tokio_test::io::Builder;
+
+  let mock_connection = Builder::new().write("PASS secret\r\nNICK maria\r\nUSER maria 0 * maria\r\n")
+                        .read(":maria!maria@irc.gitter.im NICK :maria\r\n");
+
+  let irc = Protocol::new(mock_connection, "maria");
+  irc.connect("secret").await.expect("irc.connect");
+
+  // how to test that the write and read actually happened
+}

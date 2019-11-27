@@ -14,18 +14,26 @@ Work-in-progress
 - examples includes some ideas for possible mini-steps to get to step 1
 
 Steps of the tutorial
+
+Part A) write an IRC bot (and IRC client library with subset of IRC protocol)
   1. establish connection/login handshake (pass, user, etc)
       a) write sequence of commands
       b) handle server response: success / error
+      c) write simple unit tests
   2. bot sends hello messages
   3. change to says something every day at some time... (Good morning San Francisco)
   4. Bot responds to a question
   5. no channel activity for certain amount of time, say "is anyone here?"
 
+Part B) write an IRC server
+
+Part C) More testing!
+  1. Write FakeIrcServer based on real server implementation (might need server refactor)
+  2. Refactor part A to use FakeIrcServer for testing for integration tests
+
+
 Thinking about best timing to fold into the tutorial
 - [ ] error handling
-- [ ] testing
-
 
 ## 1a: Connect to gitter via IRC
 
