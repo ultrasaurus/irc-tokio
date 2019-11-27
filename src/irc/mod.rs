@@ -57,7 +57,8 @@ impl<Connection: AsyncRead + AsyncWrite + Unpin> Protocol<Connection> {
       let mut response = String::new();
       self.bufconn.read_line(&mut response).await?;
       {
-        let message = Message::from_string(&response).ok_or("Could not parse message")?;
+        let message = Message::from_string(&response)?;
+
         for info in &self.handlers {
           (info.f)(&message);
         }

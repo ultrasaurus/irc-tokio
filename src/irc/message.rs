@@ -1,3 +1,6 @@
+use crate::error::Error;
+
+#[derive(Debug, PartialEq)]
 pub struct Message<'a> {
   pub prefix: Option<&'a str>,
   pub command: &'a str,
@@ -5,7 +8,14 @@ pub struct Message<'a> {
 }
 
 impl<'m> Message<'m> {
-  pub fn from_string(line: &'m str) -> Option<Message<'m>> {
+  pub fn from_string(line: &'m str) -> Result<Message<'m>, Error> {
+    if line.is_empty() {
+        return Err(Error::MessageMissingCommand);
+    }
+    if line.chars().count() > 512 {
+        return Err(Error::MessageStringTooLong);
+    }
+
     let mut parts = line.split(' ');
 
     let prefix = line.chars().nth(0)
@@ -17,11 +27,12 @@ impl<'m> Message<'m> {
             }
         });
 
-    let command = parts.next()?;
+    let command = parts.next()
+        .ok_or(Error::MessageMissingCommand)?;
 
     let params = parts.collect();
 
-    Some(Message {
+    Ok(Message {
       prefix,
       command,
       params,
@@ -29,10 +40,35 @@ impl<'m> Message<'m> {
   }
 }
 
-#[test]
-fn can_create_message() {
-    let m = Message::from_string(":me!me@irc.gitter.im JOIN #mychannel").unwrap();
-    assert_eq!(m.prefix, Some(":me!me@irc.gitter.im"));
-    assert_eq!(m.command, "JOIN");
-    assert_eq!(m.params[0], "#mychannel");
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn can_create_message() {
+        let m = Message::from_string(":me!me@irc.gitter.im JOIN #mychannel").unwrap();
+        assert_eq!(m.prefix, Some(":me!me@irc.gitter.im"));
+        assert_eq!(m.command, "JOIN");
+        assert_eq!(m.params[0], "#mychannel");
+    }
+
+    #[test]
+    fn test_missing_command() {
+        let m = Message::from_string("");
+        assert_eq!(m, Err(Error::MessageMissingCommand));
+
+        let m = Message::from_string(":me!me@irc.gitter.im");
+        assert_eq!(m, Err(Error::MessageMissingCommand));
+    }
+
+    #[test]
+    fn test_string_too_long() {
+        let prefix_command = ":me!me@irc.gitter.im JOIN #";
+        let channel_name = "n".repeat(486);
+        assert_eq!(prefix_command.chars().count() + channel_name.chars().count(), 513);
+
+        let message = format!("{}{}", prefix_command, channel_name);
+        let m = Message::from_string(&message);
+        assert_eq!(m, Err(Error::MessageStringTooLong));
+    }
 }
