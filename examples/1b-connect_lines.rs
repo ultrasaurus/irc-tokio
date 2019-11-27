@@ -3,18 +3,17 @@ use std::error::Error;
 
 use tokio::prelude::*;
 use tokio::{
-    codec::{Framed, LinesCodec},
     net::TcpStream,
 };
-
+use tokio_util::codec::{Framed, LinesCodec};
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let irc_user = env::var("USER")
-        .expect("USER environment var required. Perhaps you forgot to `source .env`");   
+        .expect("USER environment var required. Perhaps you forgot to `source .env`");
     let irc_pass = env::var("PASS")
-        .expect("PASS environment var required. Perhaps you forgot to `source .env`"); 
+        .expect("PASS environment var required. Perhaps you forgot to `source .env`");
 
     // Connect to the server
     let addr = "127.0.0.1:1234";
@@ -22,7 +21,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut lines = Framed::new(stream, LinesCodec::new());
 
     // Write some data.
-    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
+    let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
             pass=irc_pass, name=irc_user);
 
     lines
@@ -45,7 +44,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Ok(line) = response {
         println!("response: {:?}", line);
     }
-    // example output 
+    // example output
     // response: :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im NICK :ultrasaurus_twitter
     // response: :gitter!gitter@irc.gitter.im PRIVMSG gitter : Authentication failed. Get a valid token from https://irc.gitter.im
 

@@ -5,15 +5,14 @@ use tokio::prelude::*;
 use tokio::{
     net::TcpStream,
     io::BufReader,
-    net::tcp::split::WriteHalf,
-    net::tcp::split::ReadHalf,
+    io::{ReadHalf, WriteHalf},
 };
 
 struct Session<'a> {
     pub nick: &'a str,
     pub state: State,
-    rx: BufReader<ReadHalf<'a>>,
-    tx: WriteHalf<'a>,
+    rx: BufReader<ReadHalf<TcpStream>>,
+    tx: WriteHalf<TcpStream>,
 }
 
 enum State {
@@ -24,7 +23,7 @@ enum State {
 
 impl Session<'_> {
     pub async fn connect<'a>(tcp: &'a mut TcpStream, nick: &'a str, pass: &'a str) -> Result<Session<'a>, Box<dyn Error>> {
-        let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n", 
+        let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
             pass=pass, name=nick);
             let (rx, mut tx) = tcp.split();
             tx.write_all(connect_str.as_bytes()).await?;
@@ -35,11 +34,11 @@ impl Session<'_> {
 
             Ok(Session {
                 nick,
-                rx: reader, 
+                rx: reader,
                 tx,
                 state: State::Connected
             })
-    } 
+    }
 }
 
 
@@ -47,9 +46,9 @@ impl Session<'_> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let irc_user = env::var("USER")
-        .expect("USER environment var required. Perhaps you forgot to `source .env`");   
+        .expect("USER environment var required. Perhaps you forgot to `source .env`");
     let irc_pass = env::var("PASS")
-        .expect("PASS environment var required. Perhaps you forgot to `source .env`"); 
+        .expect("PASS environment var required. Perhaps you forgot to `source .env`");
 
     // Connect to the server
     let addr = "127.0.0.1:1234";
