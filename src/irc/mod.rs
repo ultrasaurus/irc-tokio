@@ -16,27 +16,30 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
-pub struct Protocol<'a, Connection = TcpStream> {
+pub struct Protocol<'a, Connection> {
   nick: &'a str,
   bufconn: BufReader<Connection>,
   handlers: Vec<LineHandlerInfo<'a>>,
 }
 
 // T - tcp, tcp/tls, or test fake
-impl<'imp, X> Protocol<'imp> for X
-  where
-    X: AsyncRead + AsyncWrite,
+impl<'imp, C> Protocol<'imp, C>
+where
+        C: AsyncRead + AsyncWrite + Unpin,
     {
-       fn new<'a>(tcp: i32, nick: &'a str) -> () { // Protocol<'a, C> {
-        // let p = Protocol {
-        //   nick,
-        //   bufconn: BufReader::new(tcp),
-        //   handlers: Vec::new(),
-        // };
-        ()
-    }
+       pub fn new<'a, YYY>(tcp: YYY, nick: &'a str) -> Self
+       where
+        YYY: AsyncRead + AsyncWrite + Unpin,
 
-    async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
+       { // Protocol<'a, C> {
+        Protocol::<YYY> {
+          nick,
+          bufconn: BufReader::new(tcp),
+          handlers: Vec::new(),
+        }
+      }
+
+    pub async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
       let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
           pass=pass, name=self.nick);
       self.bufconn.write_all(connect_str.as_bytes()).await?;

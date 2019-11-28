@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let tcp = TcpStream::connect(addr).await?;
     //     let tcp = TcpStream::connect(addr).await?;
 
-    let irc = irc::Protocol::new(4, &irc_user);
+    let irc: irc::Protocol<'_, TcpStream> = irc::Protocol::new(tcp, &irc_user);
 
     // let mut irc = irc::Session::new(addr, &irc_user).await?;
 
