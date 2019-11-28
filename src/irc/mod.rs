@@ -18,7 +18,7 @@ struct LineHandlerInfo<'a> {
 
 pub struct Protocol<'a, T = TcpStream>
 {
-  nick: &'a str,
+  nick: String,
   bufconn: BufReader<T>,
   handlers: Vec<LineHandlerInfo<'a>>,
 }
@@ -26,7 +26,7 @@ pub struct Protocol<'a, T = TcpStream>
 // T - tcp, tcp/tls, or test fake
 impl<'imp, Connection: AsyncRead + AsyncWrite + Unpin> Protocol<'imp, Connection>
 {
-    pub fn new(tcp: Connection, nick: &'imp str) -> Self
+    pub fn new(tcp: Connection, nick: String) -> Self
     {
       Protocol {
         nick,

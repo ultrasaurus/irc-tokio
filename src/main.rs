@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "127.0.0.1:1234";
     let tcp = TcpStream::connect(addr).await?;
 
-    let mut irc = irc::Protocol::new(tcp, &irc_user);
+    let mut irc = irc::Protocol::new(tcp, irc_user);
 
     // // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #irc-tokio/community\r
     irc.register_handler("#irc-tokio/community JOIN response", |message| {
