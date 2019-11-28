@@ -19,7 +19,6 @@ struct LineHandlerInfo<'a> {
 }
 
 pub struct Protocol<'a, T>
-where T: AsyncRead + AsyncWrite + Unpin
 {
   nick: &'a str,
   bufconn: BufReader<T>,
@@ -27,18 +26,16 @@ where T: AsyncRead + AsyncWrite + Unpin
 }
 
 // T - tcp, tcp/tls, or test fake
-impl<'imp, Connection> Protocol<'imp, Connection>
-where Connection: AsyncRead + AsyncWrite + Unpin
-
+impl<'imp, Connection: AsyncRead + AsyncWrite + Unpin> Protocol<'imp, Connection>
+{
+    pub fn new(tcp: Connection, nick: &'imp str) -> Self
     {
-       pub fn new(tcp: Connection, nick: &'imp str) -> Self
-       {
-        Protocol {
-          nick,
-          bufconn: BufReader::new(tcp),
-          handlers: Vec::new(),
-        }
+      Protocol {
+        nick,
+        bufconn: BufReader::new(tcp),
+        handlers: Vec::new(),
       }
+    }
 
     pub async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
       let connect_str = format!("PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
@@ -118,7 +115,7 @@ async fn can_create_protocol() {
   let mock_connection: Mock = Builder::new().write(b"PASS secret\r\nNICK maria\r\nUSER maria 0 * maria\r\n")
                         .read(b":maria!maria@irc.gitter.im NICK :maria\r\n").build();
 
-  let irc = Protocol::new(mock_connection, "maria");
+  let mut irc = Protocol::new(mock_connection, "maria");
   irc.connect("secret").await.expect("irc.connect");
 
   // how to test that the write and read actually happened
