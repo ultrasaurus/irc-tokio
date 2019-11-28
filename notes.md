@@ -37,3 +37,12 @@ fake.flush();
 assert(a_called);
 assert(b_called);
 ```
+
+
+## what implements AsyncRead and AsyncWrite?
+
+```
+tokio::test::io::Mock
+tokio::fs::File
+tokio::io::{BufReader, BufWriter}
+```

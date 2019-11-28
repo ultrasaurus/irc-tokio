@@ -18,24 +18,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let addr = "127.0.0.1:1234";
     let tcp = TcpStream::connect(addr).await?;
-    //     let tcp = TcpStream::connect(addr).await?;
 
-    let irc: irc::Protocol<'_, TcpStream> = irc::Protocol::new(tcp, &irc_user);
-
-    // let mut irc = irc::Session::new(addr, &irc_user).await?;
+    let mut irc: irc::Protocol<'_, TcpStream> = irc::Protocol::new(tcp, &irc_user);
 
     // // :ultrasaurus_twitter!ultrasaurus_twitter@irc.gitter.im JOIN #irc-tokio/community\r
-    // irc.register_handler("#irc-tokio/community JOIN response", |message| {
-    //   if message.command == "JOIN" {
-    //     println!("**** joined #ultrasaurus!\n {:?}\n {}\n {:?}\n", message.prefix, message.command, message.params);
-    //   }
-    //   ()
-    // });
+    irc.register_handler("#irc-tokio/community JOIN response", |message| {
+      if message.command == "JOIN" {
+        println!("**** joined #ultrasaurus!\n {:?}\n {}\n {:?}\n", message.prefix, message.command, message.params);
+      }
+      ()
+    });
 
     // // TODO: handle ping (maybe inside Session impl)
 
-    // irc.connect(&irc_pass).await?;    // read loop
-    // irc.command("JOIN #irc-tokio/community\r\n").await?;
-    // irc.handle_lines().await?;
+    irc.connect(&irc_pass).await?;    // read loop
+    irc.command("JOIN #irc-tokio/community\r\n").await?;
+    irc.handle_lines().await?;
     Ok(())
 }
