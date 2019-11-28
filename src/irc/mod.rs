@@ -5,6 +5,8 @@ use tokio::{
     io::BufReader,
     net::TcpStream,
 };
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
 
 pub mod message;
 pub use self::message::Message; // Re-export `Message` as part of irc module
@@ -23,16 +25,12 @@ pub struct Protocol<'a, Connection> {
 }
 
 // T - tcp, tcp/tls, or test fake
-impl<'imp, C> Protocol<'imp, C>
-where
-        C: AsyncRead + AsyncWrite + Unpin,
+impl<'imp, Connection> Protocol<'imp, Connection>
+where Connection: AsyncRead + AsyncWrite + Unpin
     {
-       pub fn new<'a, YYY>(tcp: YYY, nick: &'a str) -> Self
-       where
-        YYY: AsyncRead + AsyncWrite + Unpin,
-
-       { // Protocol<'a, C> {
-        Protocol::<YYY> {
+       pub fn new(tcp: Connection, nick: &'imp str) -> Self
+       {
+        Protocol {
           nick,
           bufconn: BufReader::new(tcp),
           handlers: Vec::new(),
