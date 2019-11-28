@@ -18,15 +18,18 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
-pub struct Protocol<'a, Connection> {
+pub struct Protocol<'a, T>
+where T: AsyncRead + AsyncWrite + Unpin
+{
   nick: &'a str,
-  bufconn: BufReader<Connection>,
+  bufconn: BufReader<T>,
   handlers: Vec<LineHandlerInfo<'a>>,
 }
 
 // T - tcp, tcp/tls, or test fake
 impl<'imp, Connection> Protocol<'imp, Connection>
 where Connection: AsyncRead + AsyncWrite + Unpin
+
     {
        pub fn new(tcp: Connection, nick: &'imp str) -> Self
        {
