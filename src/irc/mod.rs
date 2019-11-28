@@ -5,8 +5,6 @@ use tokio::{
     io::BufReader,
     net::TcpStream,
 };
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
 
 pub mod message;
 pub use self::message::Message; // Re-export `Message` as part of irc module
@@ -18,7 +16,7 @@ struct LineHandlerInfo<'a> {
   f: LineHandler,
 }
 
-pub struct Protocol<'a, T>
+pub struct Protocol<'a, T = TcpStream>
 {
   nick: &'a str,
   bufconn: BufReader<T>,
