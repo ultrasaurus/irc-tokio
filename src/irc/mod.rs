@@ -42,6 +42,7 @@ impl<Connection: AsyncRead + AsyncWrite + Unpin> Protocol<Connection> {
 
   // TODO: maybe name this send_command
   pub async fn command(&mut self, cmd_str: &str) -> Result<(), std::io::Error> {
+    println!("command: {:?}", cmd_str);
     self.bufconn.write_all(cmd_str.as_bytes()).await
   }
 
