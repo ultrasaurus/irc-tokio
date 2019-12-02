@@ -29,7 +29,7 @@ impl<Connection: AsyncRead + AsyncWrite + Unpin> Protocol<Connection> {
     }
   }
 
-  pub async fn connect<'a>(&'a mut self, pass: &'a str) -> Result<(), Box<dyn Error>> {
+  pub async fn connect(&mut self, pass: &str) -> Result<(), Box<dyn Error>> {
     let connect_str = format!(
       "PASS {pass}\r\nNICK {name}\r\nUSER {name} 0 * {name}\r\n",
       pass = pass,
@@ -41,7 +41,7 @@ impl<Connection: AsyncRead + AsyncWrite + Unpin> Protocol<Connection> {
   }
 
   // TODO: maybe name this send_command
-  pub async fn command<'a>(&'a mut self, cmd_str: &'a str) -> Result<(), std::io::Error> {
+  pub async fn command(&mut self, cmd_str: &str) -> Result<(), std::io::Error> {
     self.bufconn.write_all(cmd_str.as_bytes()).await
   }
 
@@ -125,7 +125,7 @@ async fn can_create_protocol() {
     .read(b":maria!maria@irc.gitter.im NICK :maria\r\n")
     .build();
 
-  let mut irc = Protocol::new(mock_connection, "maria");
+  let mut irc = Protocol::new(mock_connection, "maria".into());
   irc.connect("secret").await.expect("irc.connect");
 
   // how to test that the write and read actually happened
