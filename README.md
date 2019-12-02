@@ -17,9 +17,12 @@ Steps of the tutorial
 
 Part A) write an IRC bot (and IRC client library with subset of IRC protocol)
   1. establish connection/login handshake (pass, user, etc)
-      a) write sequence of commands
-      b) handle server response: success / error
-      c) write simple unit tests
+      a) write/read from socket using simplest possible syntax
+      b) refactor to impl to make it easier modify in next steps
+         - additional logic needed to complete connection sequence
+         - write simple unit tests (maybe test first?)
+      c) handle server response: success / error
+      d) add JOIN/PING-PONG command, if we didn't already handle above
   2. bot sends hello messages
   3. change to says something every day at some time... (Good morning San Francisco)
   4. Bot responds to a question
