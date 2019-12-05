@@ -44,6 +44,9 @@ impl<'m> Message<'m> {
 mod test {
     use super::*;
 
+    // TODO use a macro to match error enum variant
+    // Since we can't use PartialEq, only pattern matching
+
     #[test]
     fn can_create_message() {
         let m = Message::from_string(":me!me@irc.gitter.im JOIN #mychannel").unwrap();
@@ -55,10 +58,16 @@ mod test {
     #[test]
     fn test_missing_command() {
         let m = Message::from_string("");
-        assert_eq!(m, Err(Error::MessageMissingCommand));
+        match m {
+            Err(Error::MessageMissingCommand) => (),
+            _ => panic!(),
+        }
 
         let m = Message::from_string(":me!me@irc.gitter.im");
-        assert_eq!(m, Err(Error::MessageMissingCommand));
+        match m {
+            Err(Error::MessageMissingCommand) => (),
+            _ => panic!(),
+        }
     }
 
     #[test]
@@ -69,6 +78,9 @@ mod test {
 
         let message = format!("{}{}", prefix_command, channel_name);
         let m = Message::from_string(&message);
-        assert_eq!(m, Err(Error::MessageStringTooLong));
+        match m {
+            Err(Error::MessageStringTooLong) => (),
+            _ => panic!(),
+        }
     }
 }

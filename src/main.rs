@@ -1,6 +1,4 @@
-mod error;
-mod irc;
-
+use irc_tokio as irc;
 use std::env;
 use std::error::Error;
 use tokio::net::TcpStream;
