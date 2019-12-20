@@ -1,8 +1,7 @@
+use irc_tokio as irc;
 use std::env;
 use std::error::Error;
 use tokio::net::TcpStream;
-
-mod irc;
 
 //https://docs.rs/tokio/0.2.0-alpha.5/tokio/net/tcp/struct.TcpStream.html
 #[tokio::main]
